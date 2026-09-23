@@ -179,7 +179,7 @@ Para compilar e instalar directamente en el dispositivo/emulador conectado:
 
 * **En Windows (PowerShell / CMD):**
   ```powershell
-  # Compilar el APK en modo debug
+  # Compilar el APK (en modo debug)
   .\gradlew.bat :androidApp:assembleDebug
 
   # Instalar y ejecutar directamente en el dispositivo conectado

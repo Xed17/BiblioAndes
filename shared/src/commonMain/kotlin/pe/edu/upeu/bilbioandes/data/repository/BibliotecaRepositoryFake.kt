@@ -79,7 +79,7 @@ class BibliotecaRepositoryFake : BibliotecaRepository {
             ),
             fechaLimite = "2026-10-01",
             estado = EstadoPrestamo.Activo(
-                diasRestantes = 8
+                diasRestantes = 7 // RN-03: Todo préstamo dura siete días
             )
         )
 

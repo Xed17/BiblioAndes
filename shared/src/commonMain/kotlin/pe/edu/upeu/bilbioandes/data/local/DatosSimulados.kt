@@ -8,10 +8,10 @@ import pe.edu.upeu.bilbioandes.domain.model.Prestamo
 object DatosSimulados {
 
     val estudiante = Estudiante(
-        nombre = "Carlos Mendoza",
+        nombre = "Eduard Chambilla",
         codigo = "202612345",
         carrera = "Ingeniería de Software",
-        correo = "carlos.mendoza@biblioandes.edu.pe"
+        correo = "eduard.chambilla@biblioandes.edu.pe"
     )
 
     val libros = listOf(

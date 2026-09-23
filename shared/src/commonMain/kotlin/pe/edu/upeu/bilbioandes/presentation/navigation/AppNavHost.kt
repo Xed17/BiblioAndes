@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.savedstate.read
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import pe.edu.upeu.bilbioandes.presentation.catalogo.CatalogoScreen
@@ -152,7 +153,9 @@ fun AppNavHost(
                     }
                 )
             ) { backStackEntry ->
-                val libroId = backStackEntry.arguments?.getInt("libroId") ?: 0
+                val libroId = backStackEntry.arguments?.read {
+                    getInt("libroId")
+                } ?: 0
                 val viewModel = koinViewModel<DetalleLibroViewModel>(
                     parameters = { parametersOf(libroId) }
                 )

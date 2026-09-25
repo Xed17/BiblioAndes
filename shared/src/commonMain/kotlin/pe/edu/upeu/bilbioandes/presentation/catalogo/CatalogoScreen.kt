@@ -71,7 +71,7 @@ fun CatalogoScreen(
         }
 
         is UiState.Success -> {
-            val librosFiltrados = viewModel.obtenerLibrosFiltrados()
+            val librosFiltrados = state.librosFiltrados
 
             Column(
                 modifier = Modifier
@@ -88,6 +88,20 @@ fun CatalogoScreen(
                         .padding(top = 8.dp),
                     singleLine = true
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Solicitud de Cambio SC-A: Chip «Solo disponibles»
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    FilterChip(
+                        selected = state.soloDisponibles,
+                        onClick = { viewModel.alternarSoloDisponibles() },
+                        label = { Text("Solo disponibles") }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

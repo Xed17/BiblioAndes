@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -29,6 +30,7 @@ import pe.edu.upeu.bilbioandes.presentation.detalle.DetalleLibroScreen
 import pe.edu.upeu.bilbioandes.presentation.detalle.DetalleLibroViewModel
 import pe.edu.upeu.bilbioandes.presentation.inicio.InicioScreen
 import pe.edu.upeu.bilbioandes.presentation.inicio.InicioViewModel
+import pe.edu.upeu.bilbioandes.presentation.main.MainViewModel
 import pe.edu.upeu.bilbioandes.presentation.perfil.PerfilScreen
 import pe.edu.upeu.bilbioandes.presentation.prestamos.PrestamosScreen
 import pe.edu.upeu.bilbioandes.presentation.prestamos.PrestamosViewModel
@@ -38,10 +40,13 @@ import pe.edu.upeu.bilbioandes.presentation.prestamos.PrestamosViewModel
 fun AppNavHost(
     temaOscuro: Boolean,
     onCambiarTema: (Boolean) -> Unit,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    mainViewModel: MainViewModel = koinViewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = navBackStackEntry?.destination?.route
+    val prestamosActivos by mainViewModel.prestamosActivosCount.collectAsState()
+
 
     val mostrarBottomBar = rutaActual in listOf(
         AppRoute.Inicio.route,
@@ -90,6 +95,7 @@ fun AppNavHost(
             if (mostrarBottomBar) {
                 BottomNavigationBar(
                     rutaActual = rutaActual,
+                    prestamosActivos = prestamosActivos,
                     onNavigate = { ruta ->
                         navController.navigate(ruta) {
                             popUpTo(AppRoute.Inicio.route) {

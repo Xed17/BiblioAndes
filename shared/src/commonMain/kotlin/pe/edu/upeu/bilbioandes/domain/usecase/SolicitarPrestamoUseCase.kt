@@ -48,12 +48,29 @@ class SolicitarPrestamoUseCase(
         return repository.solicitarPrestamo(libroId)
     }
 
+    companion object {
+        const val MAXIMO_PRESTAMOS_ACTIVOS = 3
+    }
+
+    /**
+     * RN-01: Cuenta el número de préstamos en estado Activo de un estudiante.
+     */
+    fun contarPrestamosActivos(prestamos: List<Prestamo>): Int {
+        return prestamos.count { it.estado is EstadoPrestamo.Activo }
+    }
+
+    /**
+     * RN-01: Determina si el estudiante ha alcanzado el límite máximo permitido de préstamos activos (3).
+     */
+    fun haAlcanzadoLimitePrestamos(prestamos: List<Prestamo>): Boolean {
+        return contarPrestamosActivos(prestamos) >= MAXIMO_PRESTAMOS_ACTIVOS
+    }
+
     /**
      * RN-01: Un estudiante no puede tener más de tres préstamos en estado Activo de forma simultánea.
      */
     fun validarLimitePrestamos(prestamos: List<Prestamo>): String? {
-        val activos = prestamos.count { it.estado is EstadoPrestamo.Activo }
-        return if (activos >= 3) {
+        return if (haAlcanzadoLimitePrestamos(prestamos)) {
             "El estudiante ya tiene tres préstamos activos"
         } else {
             null

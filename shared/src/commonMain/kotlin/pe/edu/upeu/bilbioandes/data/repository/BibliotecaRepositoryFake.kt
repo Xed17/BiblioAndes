@@ -1,5 +1,8 @@
 package pe.edu.upeu.bilbioandes.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import pe.edu.upeu.bilbioandes.data.local.DatosSimulados
 import pe.edu.upeu.bilbioandes.domain.model.EstadoPrestamo
 import pe.edu.upeu.bilbioandes.domain.model.Estudiante
@@ -13,6 +16,7 @@ class BibliotecaRepositoryFake : BibliotecaRepository {
     private val estudiante = DatosSimulados.estudiante
     private val libros = DatosSimulados.libros.toMutableList()
     private val prestamos = DatosSimulados.prestamos.toMutableList()
+    private val _prestamosFlow = MutableStateFlow(prestamos.toList())
 
     override suspend fun obtenerEstudiante(): Estudiante {
         return estudiante
@@ -35,6 +39,10 @@ class BibliotecaRepositoryFake : BibliotecaRepository {
 
     override suspend fun obtenerPrestamos(): List<Prestamo> {
         return prestamos.toList()
+    }
+
+    override fun observarPrestamos(): Flow<List<Prestamo>> {
+        return _prestamosFlow.asStateFlow()
     }
 
     override suspend fun solicitarPrestamo(
@@ -84,6 +92,7 @@ class BibliotecaRepositoryFake : BibliotecaRepository {
         )
 
         prestamos.add(nuevoPrestamo)
+        _prestamosFlow.value = prestamos.toList()
 
         // Actualizar el libro en la lista para reflejar el cambio de ejemplares
         val index = libros.indexOfFirst { it.id == libroId }

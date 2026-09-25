@@ -59,7 +59,7 @@ Durante la defensa del proyecto se auditará la ubicación de las cuatro reglas 
 
 | Código | Regla de Negocio | Ubicación en Dominio | Función / Modelo Responsable |
 | :---: | :--- | :--- | :--- |
-| **RN-01** | Un estudiante no puede tener más de tres préstamos en estado Activo de forma simultánea. | `domain/usecase/SolicitarPrestamoUseCase.kt` | `validarLimitePrestamos(prestamos)` |
+| **RN-01** | Un estudiante no puede tener más de tres préstamos en estado Activo de forma simultánea. | `domain/usecase/SolicitarPrestamoUseCase.kt` | `validarLimitePrestamos(prestamos)`, `haAlcanzadoLimitePrestamos(prestamos)`, `contarPrestamosActivos(prestamos)` y `MAXIMO_PRESTAMOS_ACTIVOS = 3` |
 | **RN-02** | No se puede solicitar un libro cuyo número de ejemplares disponibles sea cero. | `domain/usecase/SolicitarPrestamoUseCase.kt` | `validarDisponibilidad(libro)` |
 | **RN-03** | Todo préstamo dura siete días; si la fecha de devolución ya pasó, el préstamo se muestra como Vencido con sus días de atraso. | `domain/model/EstadoPrestamo.kt` | `sealed class EstadoPrestamo` (`Activo(diasRestantes=7)`, `Vencido(diasAtraso)`) |
 | **RN-04** | Un estudiante con al menos un préstamo Vencido no puede solicitar un libro nuevo hasta regularizarlo. | `domain/usecase/SolicitarPrestamoUseCase.kt` | `validarPrestamoVencido(prestamos)` |
@@ -74,6 +74,18 @@ Durante la defensa del proyecto se auditará la ubicación de las cuatro reglas 
   * El filtrado combinado (`búsqueda` + `categoría` + `ejemplaresDisponibles > 0`) **se resuelve exclusivamente en el `ViewModel` (`CatalogoViewModel`)**, nunca dentro del Composable.
   * Se implementó el patrón **UDF estricto**: [CatalogoState.kt] contiene `soloDisponibles: Boolean` y `librosFiltrados: List<Libro>`.
   * La interfaz [CatalogoScreen.kt] contiene una fila dedicada con el `FilterChip` y consume pasivamente `state.librosFiltrados`.
+
+### SC-B: Indicador reactivo de préstamos activos (Badge) y Deshabilitación por límite (RN-01)
+* **Requerimientos:**
+  1. Mostrar en la barra de navegación inferior un indicador numérico (**Badge**) con la cantidad de préstamos activos sobre la opción «Préstamos».
+  2. Deshabilitar el botón «Solicitar préstamo» en el Detalle del libro cuando el estudiante alcance el límite de 3 préstamos activos.
+  3. **Observación crítica de evaluación:** La regla **RN-01** debe ser consultada directamente desde la capa de **Dominio**; bajo ninguna circunstancia se debe duplicar la lógica de negocio ni hardcodear valores numéricos (como `3`) en la capa de Presentación o en Composables.
+* **Resolución Arquitectónica (Evaluación):**
+  * **Dominio Puro:** `SolicitarPrestamoUseCase` expone las funciones de negocio `haAlcanzadoLimitePrestamos(prestamos: List<Prestamo>): Boolean` y `contarPrestamosActivos(prestamos: List<Prestamo>): Int`, además de la constante `MAXIMO_PRESTAMOS_ACTIVOS = 3`.
+  * **Flujo Reactivo (`Flow`):** `BibliotecaRepository` define `fun observarPrestamos(): Flow<List<Prestamo>>`, implementado en `BibliotecaRepositoryFake` con un `MutableStateFlow` que notifica a toda la aplicación cada vez que se genera un préstamo.
+  * **Caso de Uso:** Se creó `ObservarPrestamosUseCase(repository)` en Dominio.
+  * **ViewModel de Navegación (`MainViewModel`):** Mantiene un `StateFlow<Int>` derivado de `observarPrestamos()` aplicando `solicitarPrestamoUseCase.contarPrestamosActivos(prestamos)`, alimentando el Badge en tiempo real sin recargar pantallas.
+  * **Detalle del Libro:** `DetalleLibroViewModel` evalúa `limitePrestamosAlcanzado = solicitarPrestamo.haAlcanzadoLimitePrestamos(prestamos)` al cargar y tras cada solicitud. La pantalla [DetalleLibroScreen.kt] mantiene el texto «Solicitar préstamo» con `enabled = false` y despliega una tarjeta de advertencia estilizada con icono informativo sobre RN-01.
 
 ---
 
@@ -113,6 +125,7 @@ BilbioAndes/
 │           │   ├── repository/
 │           │   │   └── BibliotecaRepository.kt      # Contrato/interfaz del repositorio
 │           │   └── usecase/
+│           │       ├── ObservarPrestamosUseCase.kt  # Reactividad: Flujo continuo de préstamos
 │           │       ├── ObtenerCategoriasUseCase.kt  # Extracción de categorías únicas
 │           │       ├── ObtenerEstudianteUseCase.kt  # Consulta de datos del alumno
 │           │       ├── ObtenerLibroUseCase.kt       # Consulta individual por ID
@@ -124,7 +137,7 @@ BilbioAndes/
 │           │   ├── local/
 │           │   │   └── DatosSimulados.kt            # Semilla inicial (Estudiante, 12 libros, 5 préstamos)
 │           │   └── repository/
-│           │       └── BibliotecaRepositoryFake.kt  # Implementación en memoria del repositorio
+│           │       └── BibliotecaRepositoryFake.kt  # Implementación en memoria con StateFlow reactivo
 │           │
 │           ├── presentation/                        # CAPA DE PRESENTACIÓN (Compose UI & MVVM)
 │           │   ├── common/
@@ -134,10 +147,12 @@ BilbioAndes/
 │           │   ├── theme/
 │           │   │   ├── Theme.kt                     # BiblioAndesTheme (soporte Claro/Oscuro)
 │           │   │   └── Type.kt                      # Tipografías Material 3
+│           │   ├── main/                            # Main / Navegación Global (SC-B)
+│           │   │   └── MainViewModel.kt             # Estado reactivo del Badge de navegación
 │           │   ├── navigation/
 │           │   │   ├── AppNavHost.kt                # Scaffold principal y grafo NavHost
 │           │   │   ├── AppRoute.kt                  # Definición de rutas y parámetros
-│           │   │   └── BottomNavigationBar.kt       # Barra inferior de 3 destinos
+│           │   │   └── BottomNavigationBar.kt       # Barra inferior con Badge dinámico (SC-B)
 │           │   ├── inicio/                          # RF-01: Pantalla de Inicio
 │           │   │   ├── InicioScreen.kt
 │           │   │   ├── InicioState.kt
@@ -146,7 +161,7 @@ BilbioAndes/
 │           │   │   ├── CatalogoScreen.kt
 │           │   │   ├── CatalogoState.kt
 │           │   │   └── CatalogoViewModel.kt
-│           │   ├── detalle/                         # RF-03: Ficha técnica y solicitud
+│           │   ├── detalle/                         # RF-03: Ficha técnica y solicitud (RN-01 SC-B)
 │           │   │   ├── DetalleLibroScreen.kt
 │           │   │   ├── DetalleLibroState.kt
 │           │   │   └── DetalleLibroViewModel.kt
@@ -159,6 +174,7 @@ BilbioAndes/
 │           │
 │           └── di/
 │               └── AppModule.kt                     # Definición de módulos de inyección Koin
+
 │
 └── gradle/
     └── libs.versions.toml                           # Catálogo de versiones y dependencias

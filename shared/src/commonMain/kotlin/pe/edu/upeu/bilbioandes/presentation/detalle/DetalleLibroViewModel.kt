@@ -10,12 +10,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pe.edu.upeu.bilbioandes.domain.model.ResultadoPrestamo
 import pe.edu.upeu.bilbioandes.domain.usecase.ObtenerLibroUseCase
+import pe.edu.upeu.bilbioandes.domain.usecase.ObtenerPrestamosUseCase
 import pe.edu.upeu.bilbioandes.domain.usecase.SolicitarPrestamoUseCase
 import pe.edu.upeu.bilbioandes.presentation.common.UiState
 
 class DetalleLibroViewModel(
     private val libroId: Int,
     private val obtenerLibro: ObtenerLibroUseCase,
+    private val obtenerPrestamos: ObtenerPrestamosUseCase,
     private val solicitarPrestamo: SolicitarPrestamoUseCase
 ) : ViewModel() {
 
@@ -34,11 +36,15 @@ class DetalleLibroViewModel(
 
             try {
                 val libro = obtenerLibro(libroId)
+                val prestamos = obtenerPrestamos()
+                val limiteAlcanzado = solicitarPrestamo.haAlcanzadoLimitePrestamos(prestamos)
+
                 if (libro != null) {
                     _uiState.update {
                         it.copy(
                             libro = libro,
-                            estado = UiState.Success(libro)
+                            estado = UiState.Success(libro),
+                            limitePrestamosAlcanzado = limiteAlcanzado
                         )
                     }
                 } else {
@@ -83,8 +89,16 @@ class DetalleLibroViewModel(
                     resultado.mensaje
             }
 
+            val libroActualizado = obtenerLibro(libroId)
+            val prestamosActualizados = obtenerPrestamos()
+            val limiteAlcanzado = solicitarPrestamo.haAlcanzadoLimitePrestamos(prestamosActualizados)
+
             _uiState.update {
-                it.copy(resultadoPrestamo = mensaje)
+                it.copy(
+                    libro = libroActualizado ?: it.libro,
+                    resultadoPrestamo = mensaje,
+                    limitePrestamosAlcanzado = limiteAlcanzado
+                )
             }
         }
     }

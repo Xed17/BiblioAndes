@@ -7,5 +7,7 @@ data class DetalleLibroState(
     val libro: Libro? = null,
     val estado: UiState<Libro> = UiState.Loading,
     val resultadoPrestamo: String? = null,
-    val mostrarDialogo: Boolean = false
+    val mostrarDialogo: Boolean = false,
+    val limitePrestamosAlcanzado: Boolean = false
 )
+

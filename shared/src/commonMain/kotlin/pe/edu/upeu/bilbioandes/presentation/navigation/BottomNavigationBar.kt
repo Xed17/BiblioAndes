@@ -4,6 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -13,6 +15,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun BottomNavigationBar(
     rutaActual: String?,
+    prestamosActivos: Int = 0,
     onNavigate: (String) -> Unit
 ) {
     NavigationBar {
@@ -33,7 +36,17 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = rutaActual == AppRoute.Prestamos.route,
             onClick = { onNavigate(AppRoute.Prestamos.route) },
-            icon = { Icon(Icons.Default.Bookmark, contentDescription = "Préstamos") },
+            icon = {
+                BadgedBox(
+                    badge = {
+                        Badge {
+                            Text(text = prestamosActivos.toString())
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.Bookmark, contentDescription = "Préstamos")
+                }
+            },
             label = { Text("Préstamos") }
         )
     }

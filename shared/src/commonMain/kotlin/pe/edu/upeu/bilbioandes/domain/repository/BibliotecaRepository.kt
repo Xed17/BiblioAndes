@@ -1,5 +1,6 @@
 package pe.edu.upeu.bilbioandes.domain.repository
 
+import kotlinx.coroutines.flow.Flow
 import pe.edu.upeu.bilbioandes.domain.model.Estudiante
 import pe.edu.upeu.bilbioandes.domain.model.Libro
 import pe.edu.upeu.bilbioandes.domain.model.Prestamo
@@ -16,6 +17,8 @@ interface BibliotecaRepository {
     suspend fun obtenerLibroPorId(id: Int): Libro?
 
     suspend fun obtenerPrestamos(): List<Prestamo>
+
+    fun observarPrestamos(): Flow<List<Prestamo>>
 
     suspend fun solicitarPrestamo(libroId: Int): ResultadoPrestamo
 }

@@ -66,6 +66,17 @@ Durante la defensa del proyecto se auditará la ubicación de las cuatro reglas 
 
 ---
 
+## 🔄 Solicitudes de Cambio (Change Requests)
+
+### SC-A: Chip «Solo disponibles» en el Catálogo
+* **Requerimiento:** Agregar un chip «Solo disponibles» al catálogo que oculte los libros sin ejemplares y se combine con el filtro de categoría existente y la búsqueda por texto.
+* **Resolución Arquitectónica (Evaluación):** 
+  * El filtrado combinado (`búsqueda` + `categoría` + `ejemplaresDisponibles > 0`) **se resuelve exclusivamente en el `ViewModel` (`CatalogoViewModel`)**, nunca dentro del Composable.
+  * Se implementó el patrón **UDF estricto**: [CatalogoState.kt] contiene `soloDisponibles: Boolean` y `librosFiltrados: List<Libro>`.
+  * La interfaz [CatalogoScreen.kt] contiene una fila dedicada con el `FilterChip` y consume pasivamente `state.librosFiltrados`.
+
+---
+
 ## 📁 Estructura de Paquetes del Proyecto
 
 El código base se distribuye bajo el paquete raíz `pe.edu.upeu.bilbioandes`:

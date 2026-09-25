@@ -235,7 +235,7 @@ Para compilar e instalar directamente en el dispositivo/emulador conectado:
 
 ---
 
-## 👤 Datos de Prueba Preconfigurados
+## 👤 Datos de Prueba Preconfigurados Chambilla
 
 * **Estudiante activo:** Eduard Chambilla (Código: `202612345`, Carrera: `Ingeniería de Software`).
 * **Catálogo:** 12 libros divididos en Programación, Matemática, Redes, Gestión y Literatura.
